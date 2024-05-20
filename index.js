@@ -3,10 +3,9 @@ const ex = require('express');
 const body_parser = require('body-parser')
 const cor = require('cors')
 const multer = require('multer')
-const upload = multer({ dest: 'uploads/' })
 const {post_detail} = require('./modals-Schema/post.js')
 const {user_detail} = require('./modals-Schema/user.js')
-// const {upload} = require('./middlewares/multer.js')
+const upload = require('./middlewares/multer.js')
 
  
 const run = ex()
@@ -79,32 +78,26 @@ run.patch('/get-post/update' , async function(request , response){
 
 
 
-run.post('/create-post' , upload.single('image') ,async (request,response, file) =>{
- 
-    // res.send("upload success !")
-    console.log("1")
-    try{
-        console.log("15")
-        console.log(request.file)
+run.post('/create-post', upload.single('image'), async (request, response) => {
+    try {
+        const imagePath = request.file ? request.file.path : null;
         await post_detail.create({
-            "title" : request.body.title ,
-            "description" : request.body.description,
-            "image" : request.body.image
-
-        })
+            title: request.body.title,
+            description: request.body.description,
+            image: imagePath
+        });
         response.status(200).json({
-            "status" : "success" ,
-            "content" : "created"
-        })
-    }
-    catch(er){
+            status: 'success',
+            content: 'created'
+        });
+    } catch (er) {
         response.status(500).json({
-            "status" : "failure" , 
-            "content" : "corrupted" ,
-            "error" : er
-        })
+            status: 'failure',
+            content: 'corrupted',
+            error: er.message
+        });
     }
-})
+});
 
 
 run.post('/create-user' , async function(request , response){
