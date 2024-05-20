@@ -2,9 +2,13 @@ const moong =require('mongoose');
 const ex = require('express');
 const body_parser = require('body-parser')
 const cor = require('cors')
+const multer = require('multer')
+const upload = multer({ dest: 'uploads/' })
 const {post_detail} = require('./modals-Schema/post.js')
 const {user_detail} = require('./modals-Schema/user.js')
+// const {upload} = require('./middlewares/multer.js')
 
+ 
 const run = ex()
 run.use(ex.json());
 run.use(cor());
@@ -75,15 +79,18 @@ run.patch('/get-post/update' , async function(request , response){
 
 
 
-run.post('/create-post' , async function(request , response){
+run.post('/create-post' , upload.single('image') ,async (request,response, file) =>{
+ 
+    // res.send("upload success !")
+    console.log("1")
     try{
         console.log("15")
+        console.log(request.file)
         await post_detail.create({
-            "username" : request.body.username,
             "title" : request.body.title ,
-            "image" : request.body.image ,
-            "like" : request.body.like ,
-            "comment" : request.body.comment
+            "description" : request.body.description,
+            "image" : request.body.image
+
         })
         response.status(200).json({
             "status" : "success" ,

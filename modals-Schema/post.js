@@ -11,7 +11,7 @@ const post = new mong.Schema({
     },
     description : {
         type : String,
-        required : true
+        // required : true
     },
     image : {
         type : String,
