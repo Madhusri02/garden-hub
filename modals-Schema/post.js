@@ -13,9 +13,9 @@ const post = new mong.Schema({
         type : String,
         // required : true
     },
-    image : {
-        type : String,
-        // required : true
+    image: {
+        data: Buffer,
+        contentType: String
     },
     like : {
         type : Number,

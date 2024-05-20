@@ -2,16 +2,21 @@ const moong =require('mongoose');
 const ex = require('express');
 const body_parser = require('body-parser')
 const cor = require('cors')
-const multer = require('multer')
 const {post_detail} = require('./modals-Schema/post.js')
 const {user_detail} = require('./modals-Schema/user.js')
+
+// image uplodaer
 const upload = require('./middlewares/multer.js')
+const multer = require('multer')
+const fs = require('fs');
+const path = require('path');
 
  
 const run = ex()
 run.use(ex.json());
 run.use(cor());
 run.use(body_parser.json());
+run.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 async function connecto_data(){
     try{
@@ -78,24 +83,22 @@ run.patch('/get-post/update' , async function(request , response){
 
 
 
-run.post('/create-post', upload.single('image'), async (request, response) => {
+run.post('/create-post', upload.single('image'), async (req, res) => {
     try {
-        const imagePath = request.file ? request.file.path : null;
-        await post_detail.create({
-            title: request.body.title,
-            description: request.body.description,
-            image: imagePath
+        console.log("2");
+        const post = new post_detail({
+            title: req.body.title,
+            description: req.body.description,
+            image: {
+                data: fs.readFileSync(req.file.path),
+                contentType: req.file.mimetype
+            }
         });
-        response.status(200).json({
-            status: 'success',
-            content: 'created'
-        });
+
+        await post.save();
+        res.status(200).json({ status: 'success', content: 'created' });
     } catch (er) {
-        response.status(500).json({
-            status: 'failure',
-            content: 'corrupted',
-            error: er.message
-        });
+        res.status(500).json({ status: 'failure', content: 'corrupted', error: er.message });
     }
 });
 
