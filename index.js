@@ -6,17 +6,14 @@ const {post_detail} = require('./modals-Schema/post.js')
 const {user_detail} = require('./modals-Schema/user.js')
 
 // image uplodaer
-const upload = require('./middlewares/multer.js')
-const multer = require('multer')
-const fs = require('fs');
-const path = require('path');
+const multer  = require('multer')
+const upload = multer({ dest: 'uploads/' })
 
  
 const run = ex()
 run.use(ex.json());
 run.use(cor());
 run.use(body_parser.json());
-run.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 async function connecto_data(){
     try{
@@ -48,6 +45,27 @@ run.get('/get-post' , async function(request , response){
         }
 })
 
+run.get('/get-post/:id', async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const post = await post_detail.findById(postId);
+
+        if (!post) {
+            return res.status(404).json({
+                status: 'failure',
+                content: 'Post not found'
+            });
+        }
+
+        res.status(200).json(post);
+    } catch (error) {
+        res.status(500).json({
+            status: 'failure',
+            content: 'corrupted',
+            error: error.message
+        });
+    }
+});
 
 run.patch('/get-post/update' , async function(request , response){
     try{
@@ -75,30 +93,24 @@ run.patch('/get-post/update' , async function(request , response){
     }
     catch(error){
         response.status(500).json({
-            "status" : "error !" ,
+            "status" : "error !" , 
             "error" : error
         })
     }
 })
 
 
-
-run.post('/create-post', upload.single('image'), async (req, res) => {
+run.post('/create-post', async (req, res) => {
     try {
         console.log("2");
-        const post = new post_detail({
-            title: req.body.title,
-            description: req.body.description,
-            image: {
-                data: fs.readFileSync(req.file.path),
-                contentType: req.file.mimetype
-            }
-        });
-
-        await post.save();
-        res.status(200).json({ status: 'success', content: 'created' });
-    } catch (er) {
-        res.status(500).json({ status: 'failure', content: 'corrupted', error: er.message });
+        const title = req.body.title;
+        const description =  req.body.description;
+        const image = req.body.image;
+        await post_detail.create({title : title , description : description , image : image});
+        return res.status(200).json({ status: 'success', content: 'created' });
+    } 
+    catch (er) {
+       return  res.status(500).json({ status: 'failure', content: 'corrupted', error: er.message });
     }
 });
 
